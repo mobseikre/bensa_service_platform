@@ -103,7 +103,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
           return {
             'id': category['id'],
             'name': categoryName,
-            'nameEn': nameEn,
+            'nameEn': nameEn, // Use English name for backend matching
             'icon': _getCategoryIcon(categoryName),
           };
         }).toList();
@@ -174,8 +174,25 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
         firstSlot.from.minute,
       );
 
+      // CRITICAL FIX: Send English name to backend for robust matching
+      // The _selectedCategory contains the display name (possibly Arabic)
+      String categoryToSend = _selectedCategory!;
+      try {
+        if (_serviceCategories.isNotEmpty) {
+          final catObj = _serviceCategories.firstWhere(
+            (c) => c['name'] == _selectedCategory,
+            orElse: () => {},
+          );
+          if (catObj.isNotEmpty && catObj['nameEn'] != null) {
+            categoryToSend = catObj['nameEn'];
+          }
+        }
+      } catch (e) {
+        // Fallback to selected category
+      }
+
       await _apiService.createRequest(
-        category: _selectedCategory!,
+        category: categoryToSend,
         description: _descriptionController.text.trim(),
         locationLat: _currentLocation?.latitude ?? 0,
         locationLng: _currentLocation?.longitude ?? 0,

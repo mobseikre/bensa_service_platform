@@ -87,14 +87,8 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
       );
       debugPrint('Stats loaded successfully');
 
-      // Force Offline on Startup (per user request)
-      // We do this after stats to ensure we don't interfere with first load if possible,
-      // but the user wants it at the start. So let's do it successfully once.
-      if (_isAvailable) {
-        debugPrint('Forcing technician offline on startup...');
-        await _apiService.toggleAvailability(isAvailable: false);
-        if (mounted) setState(() => _isAvailable = false);
-      }
+      // Removed: Force Offline on Startup
+      // We want to RESPECT the state from the server or active job status.
 
       debugPrint('Loading active job...');
       await _loadActiveJob().timeout(
@@ -157,8 +151,14 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
 
           // Sync availability with backend
           final backendAvailability = response['is_available'];
+          final isBlocked = response['is_blocked'] ?? false;
           _isAvailable =
               (backendAvailability == 1 || backendAvailability == true);
+
+          // LOGIC: Sync availability with backend but enforce blocks
+          if (isBlocked && _isAvailable) {
+            _isAvailable = false; // Force visual offline if blocked
+          }
 
           // LOGIC: Sync availability with backend.
           // If there's pending custody, the backend will return is_available: false,
@@ -206,6 +206,12 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
 
           setState(() {
             _activeJob = jobData;
+            // FORCE ONLINE VISUALLY IF ACTIVE JOB EXISTS
+            // This ensures that even if backend state is lagging, the UI shows the technician as busy/online
+            // preventing them from seeing "Offline" while working.
+            if (_activeJob != null) {
+              _isAvailable = true;
+            }
           });
 
           debugPrint('=== ACTIVE JOB LOADED ===');
@@ -240,6 +246,8 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
+      // Ensure UI reflects the forced ON state
+      setState(() => _isAvailable = true);
       return;
     }
 
@@ -279,14 +287,16 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
       if (mounted) {
         setState(() {
           _isTogglingAvailability = false;
-          // Don't change _isAvailable on error
+          // Revert to previous state on error
+          _isAvailable = !value;
         });
 
-        // Check if it's a block error (403) from custody
-        if (e is ApiException && e.statusCode == 403) {
-          final settlementData = e.errors?['pending_settlement'];
-          if (settlementData != null) {
-            _showBlockWarning(settlementData);
+        // Check if it's a block error (403)
+        if (e.toString().contains('403') ||
+            (e is ApiException && e.statusCode == 403)) {
+          // If we tried to go ONLINE and failed due to block, show the warning
+          if (value) {
+            _showBlockWarning(_statsData['pending_settlement']);
             return;
           }
         }

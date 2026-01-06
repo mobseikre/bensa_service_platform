@@ -29,7 +29,7 @@ class ApiConfig {
   // ✅ UNIFIED SETUP: Works for both Chrome and iOS Simulator
   // Run: cd ~/Bensa && php artisan serve --host=0.0.0.0 --port=8000
   // Current IP: 172.20.10.2 (updated automatically when network changes)
-  static const String? _manualOverride = 'http://192.168.2.161:8000/api';
+  static const String? _manualOverride = 'http://172.20.10.2:8000/api';
   // static const String? _manualOverride = 'http://172.20.10.2:8000/api';
 
   /// Get the appropriate base URL based on the current platform

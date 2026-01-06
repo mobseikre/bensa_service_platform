@@ -530,28 +530,30 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         final iconName = _getCategoryIcon(categoryName);
 
         // Safely convert base_price
-        double basePrice = 50.0;
+        double? basePrice;
         try {
-          final priceValue = category['base_price'] ?? category['basePrice'];
+          final priceValue = category['base_price'] ??
+              category['basePrice'] ??
+              category['price'];
           if (priceValue != null) {
-            if (priceValue is num) {
-              basePrice = priceValue.toDouble();
-            } else if (priceValue is String) {
-              basePrice = double.tryParse(priceValue) ?? 50.0;
-            }
+            // Remove any currency symbols or non-numeric characters except dot
+            final cleanPrice =
+                priceValue.toString().replaceAll(RegExp(r'[^0-9.]'), '');
+            basePrice = double.tryParse(cleanPrice);
           }
         } catch (e) {
-          basePrice = 50.0;
+          debugPrint('Error parsing price for $categoryName: $e');
+          basePrice = null;
         }
 
         return {
           'id': category['id'],
           'name': categoryName,
-          'name_en': nameEn,
+          'name_en': nameEn, // Critical for backend matching
           'icon': iconName,
           'color': _getCategoryColor(categoryName),
           'isPopular': category['is_popular'] ?? category['isPopular'] ?? false,
-          'base_price': basePrice,
+          'base_price': basePrice, // can be null (Price on Request)
           'description': category['description'] ??
               category['description_ar'] ??
               category['description_en'] ??
