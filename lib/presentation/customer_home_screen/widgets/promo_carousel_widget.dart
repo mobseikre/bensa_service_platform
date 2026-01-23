@@ -103,7 +103,7 @@ class _PromoCarouselWidgetState extends State<PromoCarouselWidget> {
                         promo['image']!,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
-                          color: theme.colorScheme.surfaceVariant,
+                          color: theme.colorScheme.surfaceContainerHighest,
                           child:
                               const Icon(Icons.broken_image_rounded, size: 40),
                         ),

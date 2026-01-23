@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "497064029162",
+    "project_id": "bensa-a9959",
+    "storage_bucket": "bensa-a9959.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:497064029162:android:74ae2194e9c3a3ac26a093",
+        "android_client_info": {
+          "package_name": "com.bensa_service_platform.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3siTgWVkI3LRxwt81WPLHCqeVnLpnDp4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

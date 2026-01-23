@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:sizer/sizer.dart';
 import '../../core/app_export.dart';
 
@@ -34,21 +33,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           _isLoading = false;
         });
 
-        // Show success message if notifications are loaded
-        if (_notifications.isNotEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('تم تحميل ${_notifications.length} إشعار'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
+        // Hide any existing error snackbars since loading succeeded
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
+
+        // Clear previous snackbar before showing a new one
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
         // Show detailed error information in debug mode
         String errorMessage = 'فشل تحميل الإشعارات';

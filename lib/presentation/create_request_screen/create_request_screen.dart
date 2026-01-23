@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import '../../core/app_export.dart';
 import '../../core/models/location_model.dart';
 import '../../core/models/time_slot_model.dart';
-import '../../widgets/custom_icon_widget.dart';
 import './widgets/datetime_picker_section.dart';
 import './widgets/description_input.dart';
 import './widgets/location_section.dart';
@@ -139,7 +137,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
       return 'cleaning_services';
     if (name.contains('نقل') || name.contains('shipping'))
       return 'local_shipping';
-    return 'home_repair_service';
+    return 'build';
   }
 
   void _navigateToManageAddresses() async {
@@ -269,14 +267,14 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                     const SizedBox(height: 24),
 
                     // 3. Time Slots Section
-                    DateTimePickerSection(
-                      selectedSlots: _selectedTimeSlots,
-                      onAddSlot: (slot) =>
-                          setState(() => _selectedTimeSlots.add(slot)),
-                      onRemoveSlot: (index) =>
-                          setState(() => _selectedTimeSlots.removeAt(index)),
-                    ),
-                    const SizedBox(height: 24),
+                    // DateTimePickerSection(
+                    //   selectedSlots: _selectedTimeSlots,
+                    //   onAddSlot: (slot) =>
+                    //       setState(() => _selectedTimeSlots.add(slot)),
+                    //   onRemoveSlot: (index) =>
+                    //       setState(() => _selectedTimeSlots.removeAt(index)),
+                    // ),
+                    // const SizedBox(height: 24),
 
                     // 4. Description Section
                     Padding(

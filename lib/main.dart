@@ -7,8 +7,24 @@ import 'package:sizer/sizer.dart';
 import '../core/app_export.dart';
 import '../widgets/custom_error_widget.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import '../core/notification_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    // Initialize Firebase
+    await Firebase.initializeApp();
+
+    // Initialize Notification Service (requests permission and gets token)
+    await NotificationService().initialize();
+
+    debugPrint('Firebase & Notification system initialized!');
+  } catch (e) {
+    debugPrint('Firebase/Notification initialization error: $e');
+    // We continue so the app still launches even if notifications fail
+  }
 
   bool _hasShownError = false;
 

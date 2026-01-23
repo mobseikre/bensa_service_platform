@@ -16,9 +16,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final ApiService _apiService = ApiService();
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _currentPasswordController =
+      TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   bool _isCurrentPasswordVisible = false;
   bool _isNewPasswordVisible = false;
@@ -299,7 +301,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 Container(
                   padding: EdgeInsets.all(3.w),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceVariant,
+                    color: theme.colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(

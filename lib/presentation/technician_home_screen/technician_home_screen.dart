@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sizer/sizer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/api_service.dart';
 import '../../widgets/custom_app_bar.dart';
@@ -43,6 +43,7 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
 
   Map<String, dynamic>? _activeJob;
   bool _hasShownBlockWarning = false;
+  int _unreadNotificationsCount = 0;
 
   // Current technician location for distance calculation
   Position? _currentTechnicianPosition;
@@ -96,6 +97,20 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
         onTimeout: () => throw Exception('Active job loading timeout'),
       );
       debugPrint('Active job loaded successfully');
+
+      // Load unread notifications count
+      try {
+        final notificationsResponse =
+            await _apiService.getNotifications(page: 1);
+        if (mounted) {
+          setState(() {
+            _unreadNotificationsCount =
+                notificationsResponse['unread_count'] ?? 0;
+          });
+        }
+      } catch (e) {
+        debugPrint('Error loading notifications count: $e');
+      }
 
       debugPrint('=== INITIAL DATA LOAD COMPLETED ===');
     } catch (e) {
@@ -416,9 +431,23 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
     }
 
     try {
-      // FIXED: Load stats first, then active job
+      // FIXED: Load stats first, then active job, then notifications
       await _loadStats();
       await _loadActiveJob();
+
+      // Refresh unread notifications count
+      try {
+        final notificationsResponse =
+            await _apiService.getNotifications(page: 1);
+        if (mounted) {
+          setState(() {
+            _unreadNotificationsCount =
+                notificationsResponse['unread_count'] ?? 0;
+          });
+        }
+      } catch (e) {
+        debugPrint('Error refreshing notifications count: $e');
+      }
     } catch (e) {
       if (mounted && !silent) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -447,6 +476,54 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
     }
   }
 
+  void _showCustomerSupportDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('مركز المساعدة'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('يمكنك التواصل مع الدعم الفني عبر الرقم التالي:'),
+            const SizedBox(height: 16),
+            Text(
+              '0921111111',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: const Color(0xFF4F46E5),
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('إلغاء'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              final Uri launchUri = Uri(
+                scheme: 'tel',
+                path: '0921111111',
+              );
+              // ignore: deprecated_member_use
+              if (await canLaunchUrl(launchUri)) {
+                // ignore: deprecated_member_use
+                await launchUrl(launchUri);
+              }
+            },
+            icon: const Icon(Icons.phone),
+            label: const Text('اتصال الآن'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4F46E5),
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -455,7 +532,14 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
       backgroundColor: const Color(0xFFF8FAFC), // Light gray background
       appBar: TechnicianAppBar(
         title: 'الرئيسية',
-        notificationCount: 2,
+        notificationCount: _unreadNotificationsCount,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.headset_mic_outlined),
+            onPressed: _showCustomerSupportDialog,
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () => _refreshJobs(silent: false),

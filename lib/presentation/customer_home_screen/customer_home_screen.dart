@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sizer/sizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/app_export.dart';
 import '../../widgets/custom_bottom_bar.dart';
@@ -34,6 +35,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   bool _didLoadRouteArgs = false;
   static bool _locationConfirmed = false;
   bool _isShowingLocationConfirmation = false;
+  int _unreadNotificationsCount = 0;
 
   // Data loading states
   final ApiService _apiService = ApiService();
@@ -477,7 +479,13 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       }
 
       // Fetch notifications to check for unread
-      await _apiService.getNotifications(page: 1);
+      final notificationsResponse = await _apiService.getNotifications(page: 1);
+      if (mounted) {
+        setState(() {
+          _unreadNotificationsCount =
+              notificationsResponse['unread_count'] ?? 0;
+        });
+      }
 
       if (mounted) {
         setState(() {
@@ -811,6 +819,52 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     );
   }
 
+  void _showCustomerSupportDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('مركز المساعدة'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('يمكنك التواصل مع الدعم الفني عبر الرقم التالي:'),
+            const SizedBox(height: 16),
+            Text(
+              '0921111111',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('إلغاء'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              final Uri launchUri = Uri(
+                scheme: 'tel',
+                path: '0921111111',
+              );
+              if (await canLaunchUrl(launchUri)) {
+                await launchUrl(launchUri);
+              }
+            },
+            icon: const Icon(Icons.phone),
+            label: const Text('اتصال الآن'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _handleBottomNavTap(int index) {
     setState(() {
       _currentBottomIndex = index;
@@ -903,13 +957,56 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         ),
         titleWidget: const SizedBox.shrink(),
         actions: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined),
+                iconSize: 26,
+                color: theme.colorScheme.primary,
+                onPressed: () async {
+                  await Navigator.pushNamed(context, '/notifications-screen');
+                  // Refresh unread count when returning
+                  _loadUserDataAndNotifications();
+                },
+              ),
+              if (_unreadNotificationsCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Text(
+                      _unreadNotificationsCount > 99
+                          ? '99+'
+                          : '$_unreadNotificationsCount',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           IconButton(
             icon: const Icon(Icons.headset_mic_outlined),
             iconSize: 26,
             color: theme.colorScheme.primary,
-            onPressed: () {
-              // Handle Customer Service action
-            },
+            onPressed: _showCustomerSupportDialog,
           ),
           SizedBox(width: 2.w),
         ],

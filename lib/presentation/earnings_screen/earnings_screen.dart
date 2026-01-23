@@ -4,7 +4,6 @@ import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
 import '../../widgets/custom_bottom_bar.dart';
-import '../../widgets/custom_icon_widget.dart';
 import './widgets/earnings_chart_widget.dart';
 import './widgets/earnings_header_widget.dart';
 import './widgets/earnings_summary_cards_widget.dart';

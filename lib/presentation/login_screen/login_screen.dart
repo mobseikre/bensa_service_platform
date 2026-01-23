@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
+import '../../core/notification_service.dart';
 
 /// Login screen for existing users
 class LoginScreen extends StatefulWidget {
@@ -79,6 +80,18 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (!mounted) return;
+
+      // Initialize Notification Service to sync FCM token now that we are authenticated
+      try {
+        await NotificationService().initialize();
+        if (kDebugMode) {
+          print('FCM Token synced after login');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('Failed to sync FCM token after login: $e');
+        }
+      }
 
       // Navigate based on user role
       final user = response['user'] as Map<String, dynamic>?;

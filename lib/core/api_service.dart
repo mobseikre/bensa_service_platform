@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -1729,6 +1730,55 @@ class ApiService {
         print('Error: $e');
       }
       throw ApiException('Failed to submit rating: $e');
+    }
+  }
+
+  /// Update FCM token for push notifications
+  Future<Map<String, dynamic>> updateFcmToken({
+    required String fcmToken,
+    String? deviceType,
+    String? deviceId,
+  }) async {
+    try {
+      final data = {
+        'fcm_token': fcmToken,
+        'device_type': deviceType ??
+            (kIsWeb ? 'web' : (Platform.isAndroid ? 'android' : 'ios')),
+        if (deviceId != null) 'device_id': deviceId,
+      };
+
+      if (kDebugMode) {
+        print('=== UPDATE FCM TOKEN REQUEST ===');
+        print('URL: $baseUrl/notifications/update-fcm-token');
+        print('Data: $data');
+      }
+
+      final response =
+          await _dio.post('/notifications/update-fcm-token', data: data);
+
+      if (kDebugMode) {
+        print('=== UPDATE FCM TOKEN RESPONSE ===');
+        print('Status: ${response.statusCode}');
+        print('Data: ${response.data}');
+      }
+
+      if (response.data is Map<String, dynamic>) {
+        return response.data;
+      }
+      return {'success': true, 'message': 'FCM token updated successfully'};
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print('=== UPDATE FCM TOKEN ERROR ===');
+        print('Error: ${e.toString()}');
+        print('Response: ${e.response?.data}');
+      }
+      throw _handleDioError(e);
+    } catch (e) {
+      if (kDebugMode) {
+        print('=== UNEXPECTED ERROR IN UPDATE FCM TOKEN ===');
+        print('Error: $e');
+      }
+      throw ApiException('Failed to update FCM token: $e');
     }
   }
 }
