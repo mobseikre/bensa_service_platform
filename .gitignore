@@ -15,6 +15,9 @@ pubspec.lock
 
 # IntelliJ related
 *.iml
+env.json
+.DS_Store
+
 *.ipr
 *.iws
 .idea/

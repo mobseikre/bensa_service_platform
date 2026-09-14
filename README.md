@@ -1,112 +1,60 @@
-# Flutter
+# Bensa — Mobile App (Flutter)
 
-A modern Flutter-based mobile application utilizing the latest mobile development technologies and tools for building responsive cross-platform applications.
+Customer and technician app for **Bensa**, an on-demand home services marketplace in Libya. Customers request a plumber, electrician or AC technician at their GPS location; nearby available technicians accept and the job is tracked live until it's done.
 
-## 📋 Prerequisites
+Backend (Laravel, JWT, Filament): [mobseikre/Bensa](https://github.com/mobseikre/Bensa)
 
-- Flutter SDK (^3.29.2)
-- Dart SDK
-- Android Studio / VS Code with Flutter extensions
-- Android SDK / Xcode (for iOS development)
+<p align="center">
+  <img src="flutter_01.png" width="220" />
+  <img src="flutter_02.png" width="220" />
+</p>
 
-## 🛠️ Installation
+## Tech Stack
 
-1. Install dependencies:
+Flutter · Dart · REST (Dio) · JWT auth with secure token storage · Google Maps · Firebase Cloud Messaging · Geolocator
+
+## Features
+
+- Email + OTP sign-up, JWT login, role-based home screens (customer / technician)
+- Create a request: pick category, describe the problem, drop a pin or use current location, choose priority and payment method
+- Live job screen for both sides with status steps (assigned → on the way → arrived → started → done)
+- Technician mode: availability toggle, background location updates, nearby-requests list sorted by distance, earnings and stats
+- Ratings, notifications, saved addresses, Arabic RTL layout
+
+## Project structure
+
+```
+lib/
+├── core/           # API client, auth/session, models, error handling
+├── presentation/   # screens grouped by feature (auth, requests, technician, profile)
+├── routes/         # named routes and guards
+├── theme/          # colors, typography, light/dark
+└── widgets/        # shared components
+```
+
+## The hardest problem I solved
+
+**Keeping the technician's location fresh without draining the battery.** The app sends location updates while the technician is available, but naive polling every few seconds killed the battery and flooded the API. I switched to distance-based updates (only send when the device has moved more than a threshold), pause updates when the technician toggles off, and debounce bursts of GPS readings. The backend uses the last known position to compute nearby requests, so a stale location silently breaks matching — handling that trade-off between freshness and cost was the core of the technician side.
+
+## Running locally
+
 ```bash
+git clone https://github.com/mobseikre/bensa_service_platform.git
+cd bensa_service_platform
 flutter pub get
+cp env.example.json env.json      # set API_BASE_URL to your backend
+flutter run --dart-define-from-file=env.json
 ```
 
-2. Run the application:
-```bash
-flutter run
-```
+Point `API_BASE_URL` at a running [Bensa backend](https://github.com/mobseikre/Bensa) (`php artisan serve` → `http://10.0.2.2:8000/api` on the Android emulator).
 
-## 📁 Project Structure
+## What I would improve with more time
 
-```
-flutter_app/
-├── android/            # Android-specific configuration
-├── ios/                # iOS-specific configuration
-├── lib/
-│   ├── core/           # Core utilities and services
-│   │   └── utils/      # Utility classes
-│   ├── presentation/   # UI screens and widgets
-│   │   └── splash_screen/ # Splash screen implementation
-│   ├── routes/         # Application routing
-│   ├── theme/          # Theme configuration
-│   ├── widgets/        # Reusable UI components
-│   └── main.dart       # Application entry point
-├── assets/             # Static assets (images, fonts, etc.)
-├── pubspec.yaml        # Project dependencies and configuration
-└── README.md           # Project documentation
-```
+- Offline queue for status updates when the technician loses signal
+- Replace location polling with a WebSocket channel
+- Widget tests for the request flow
+- In-app chat (backend endpoints already exist)
 
-## 🧩 Adding Routes
+## License
 
-To add new routes to the application, update the `lib/routes/app_routes.dart` file:
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:package_name/presentation/home_screen/home_screen.dart';
-
-class AppRoutes {
-  static const String initial = '/';
-  static const String home = '/home';
-
-  static Map<String, WidgetBuilder> routes = {
-    initial: (context) => const SplashScreen(),
-    home: (context) => const HomeScreen(),
-    // Add more routes as needed
-  }
-}
-```
-
-## 🎨 Theming
-
-This project includes a comprehensive theming system with both light and dark themes:
-
-```dart
-// Access the current theme
-ThemeData theme = Theme.of(context);
-
-// Use theme colors
-Color primaryColor = theme.colorScheme.primary;
-```
-
-The theme configuration includes:
-- Color schemes for light and dark modes
-- Typography styles
-- Button themes
-- Input decoration themes
-- Card and dialog themes
-
-## 📱 Responsive Design
-
-The app is built with responsive design using the Sizer package:
-
-```dart
-// Example of responsive sizing
-Container(
-  width: 50.w, // 50% of screen width
-  height: 20.h, // 20% of screen height
-  child: Text('Responsive Container'),
-)
-```
-## 📦 Deployment
-
-Build the application for production:
-
-```bash
-# For Android
-flutter build apk --release
-
-# For iOS
-flutter build ios --release
-```
-
-## 🙏 Acknowledgments
-- Built with [Rocket.new](https://rocket.new)
-- Powered by [Flutter](https://flutter.dev) & [Dart](https://dart.dev)
-- Styled with Material Design
-
-Built with ❤️ on Rocket.new
+Proprietary. Source is published for portfolio and review purposes only.
